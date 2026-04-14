@@ -76,8 +76,10 @@ impl PotentialUtf8 {
     #[inline]
     #[cfg(feature = "alloc")]
     pub fn from_boxed_bytes(other: Box<[u8]>) -> Box<Self> {
-        // Safety: PotentialUtf8 is transparent over [u8]
-        unsafe { core::mem::transmute::<Box<[u8]>, Box<Self>>(other) }
+        // Safety: PotentialUtf8 is transparent over [u8], so *mut [u8] and *mut PotentialUtf8
+        // have the same representation (same pointer and length metadata).
+        // This follows the same pattern as `alloc::str::from_boxed_utf8_unchecked`.
+        unsafe { Box::from_raw(Box::into_raw(other) as *mut Self) }
     }
 
     /// Create a [`PotentialUtf8`] from a boxed `str`.
